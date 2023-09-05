@@ -3,3 +3,5 @@ payload.json
 scratch
 setup.py 
 __pycache__
+solution*
+test*

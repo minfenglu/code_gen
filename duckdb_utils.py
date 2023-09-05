@@ -49,7 +49,7 @@ def fetch_start_idx(connection):
         return 0
 
 
-def record_preference(connection, id, version1, version2, preference):
+def record_code_and_preference(connection, id, version1, version2, preference):
     try:
         connection.sql(
             f"""
@@ -60,10 +60,22 @@ def record_preference(connection, id, version1, version2, preference):
             where id={id}
             """
         )
-        return DBOperationStatus.SUCCESS, "Preference has been recorded sucessfully!"
+        return DBOperationStatus.SUCCESS, "Code and preference has been recorded sucessfully!"
     except Exception as e:
         return DBOperationStatus.ERROR, e
 
+def record_preference_only(connection, id, preference):
+    try:
+        connection.sql(
+            f"""
+            UPDATE leetcode_problems 
+            SET preference={preference} 
+            where id={id}
+            """
+        )
+        return DBOperationStatus.SUCCESS, "Preference has been recorded sucessfully!"
+    except Exception as e:
+        return DBOperationStatus.ERROR, e
 
 def save_comparison(connection, id, version1, version2):
     try:
