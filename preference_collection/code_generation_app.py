@@ -38,10 +38,7 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 # reduce extra padding
 st.markdown(
     """
-        <style>
-                .reportview-container .css-1lcbmhc .css-1cypcdb  {
-                    padding-top: 1rem;
-                }
+        <style> 
                .block-container {
                     padding-top: 1rem;
                     padding-bottom: 0rem;
@@ -57,7 +54,7 @@ def main():
     display_sidebar()
 
     # main panel for preference selection
-    if st.session_state.version1 and st.session_state.version2 and False:
+    if st.session_state.version1 and st.session_state.version2:
         # display preference selection
         st.header("Which version is better?")
         display_code_pair()

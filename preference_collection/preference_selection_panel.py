@@ -107,56 +107,102 @@ def _align_code_versions(version1, version2):
     n2 = len(version2.split("\n"))
     if n1 < n2:
         version1 += "".join(["\n"] * (n2 - n1 - 1))
-        version1 += "# added extra padding"
+        version1 += "# added extra padding (for UI only)"
     elif n2 < n1:
         version2 += "".join(["\n"] * (n1 - n2 - 1))
-        version2 += "# added extra padding"
+        version2 += "# added extra padding (for UI only)"
     return version1, version2
 
 
 def _render_test_status(status):
     if status == "F":
-        return "❌"  # fail
+        return "❌"
     elif status == ".":
-        return "✅"  # pass
+        return "✅"
     else:
-        return "❗"  # error
+        return "❗"
 
 
 def _render_selection(preference, code_version):
     if preference == 1.0 * (code_version - 1):
         return "✅"
-    return " ```  ```"
+    return ""
 
 
+def _render_code_header(version, icon=""):
+    st.markdown(
+        """
+        <style>
+        .code-header {
+            font-size:20px;
+            padding: 0px 0px 0px 12px ;
+            margin-top: -12px
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    icon_image = '<img src="img/check.png" alt="✅"/>' if icon else ""
+    return st.markdown(
+        f'<b class="code-header">{version} <image src="img/check.png" /></b>',
+        unsafe_allow_html=True,
+    )
+
+
+def _render_test_header(text, class_name, margin_top=-18):
+    st.markdown(
+        f"""
+        <style>
+        .{class_name} {{
+            font-size:12;
+            padding: 0px 0px 0px 12px ;
+            margin-top: {margin_top}px;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    return st.markdown(f'<div class="{class_name}">{text}</>', unsafe_allow_html=True)
+
+
+# display header, code and unit test results
 def version_selection_column(code_version, python_code):
     id = st.session_state.problems["id"][st.session_state.prompt_index]
     preference = st.session_state.problems["preference"][st.session_state.prompt_index]
-
-    st.button(
-        f"``` ``` ```Version {code_version}```{_render_selection(preference, code_version)}",
-        key=f"version{code_version}_selection_button",
-        on_click=on_submit_preference_only,
-        args=(code_version,),
-    )
-
+    header, _, slection_button = st.columns([2, 4, 1.15])
+    # display header
+    # (version name, whether selected as preferred, selection button)
+    with header:
+        _render_code_header(
+            f"Version {code_version}", _render_selection(preference, code_version)
+        )
+    with slection_button:
+        st.button(
+            f"This One",
+            key=f"version{code_version}_selection_button",
+            on_click=on_submit_preference_only,
+            args=(code_version,),
+        )
+    # display
     st.code(python_code, line_numbers=True)
 
     # display unit test results if available
     if id in st.session_state.unit_test_results:
         results = st.session_state.unit_test_results[id][code_version - 1]
-        text, test0, test1, test2, _ = st.columns([2.5, 1, 1, 1, 5])
-        with text:
-            st.text("Tests:")
-        if len(results) > 0:
-            with test0:
-                st.text(_render_test_status(results[0]))
-        if len(results) > 1:
-            with test1:
-                st.text(_render_test_status(results[1]))
-        if len(results) > 2:
-            with test2:
-                st.text(_render_test_status(results[2]))
+        text, test0, test1, test2, _ = st.columns([0.5, 0.25, 0.25, 0.25, 5])
+        with st.container():
+            with text:
+                _render_test_header("Tests:", "test-header", -20)
+            if len(results) > 0:
+                with test0:
+                    _render_test_header(_render_test_status(results[0]), "test-result")
+            if len(results) > 1:
+                with test1:
+                    _render_test_header(_render_test_status(results[1]), "test-result")
+            if len(results) > 2:
+                with test2:
+                    _render_test_header(_render_test_status(results[2]), "test-result")
 
 
 # reset solutions
@@ -187,7 +233,7 @@ def call_codellama():
         st.session_state.problems["id"] == id, "version2"
     ] = st.session_state.version2
     new_function_name = extract_function_name(st.session_state.version1)
-    # update unit test funtion_name 
+    # update unit test funtion_name
     st.session_state.tests.loc[
         st.session_state.problems["id"] == id, "function_name"
     ] = new_function_name
@@ -227,6 +273,33 @@ def on_change_question(delta):
 
 # display two versions of python code
 def display_code_pair():
+    # custom component styling
+    st.markdown(
+        """
+            <style>
+                div[data-testid="column"].css-keje6w.e1f1d6gn1 {
+                    background-color: #343440;
+                    border-radius: 12px; 
+                    padding: 8px 0px 16px 0px;
+                }
+                }
+            </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    # custom style for This One button
+    st.markdown(
+        """
+            <style>
+                .stButton {
+                    margin-top: 8px;
+                    margin-left: 8px;
+                    padding: 0px;
+                }
+            </style>
+        """,
+        unsafe_allow_html=True,
+    )
     preference = _get_preference()
     version1_code_column, version2_code_column = st.columns(2)
     version1, version2 = _align_code_versions(
@@ -236,10 +309,11 @@ def display_code_pair():
         version_selection_column(1, version1)
     with version2_code_column:
         version_selection_column(2, version2)
-    _, center_regenerate_button, _ = st.columns(3)
+    _, center_regenerate_button, _ = st.columns([2, 1, 2])
+
     with center_regenerate_button:
         st.button(
-            "Generate Again 🤔", key="regenerate_code_button", on_click=call_codellama
+            "Generate Again 🫤", key="regenerate_code_button", on_click=call_codellama
         )
     if st.session_state.debug_mode:
         back, forward, _ = st.columns([1, 1, 10])

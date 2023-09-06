@@ -1,9 +1,6 @@
 import streamlit as st
-import math
-import requests
 from constants import (
     DEFAULT_INSTRUCTION,
-    OLLAMA_API_ENDPOINT,
 )
 from duckdb_utils import (
     post_process_response,
@@ -29,7 +26,7 @@ def display_sidebar():
             unsafe_allow_html=True,
         )
 
-        st.markdown('<b class="big-font">Better Code AI</b>', unsafe_allow_html=True)
+        st.markdown('<b class="big-font">BttrCode.AI</b>', unsafe_allow_html=True)
 
         problem_index = (
             st.session_state.prompt_index

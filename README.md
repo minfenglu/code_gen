@@ -29,7 +29,7 @@ Here is a visual illustration for the data collection, and the difference betwee
 
 ## Data Collection 
 
-All relevant files are located in the `preference_collection` folder. 
+All relevant files are located in the `preference_collection` folder. The app entry point is located in `code_generation_app.py`
 
 A screenshot of the preference selection interface if code pair is present:
 ![UI with code](./images/streamlit.png)
@@ -102,6 +102,8 @@ The collected human preference data is uploaded to [Hugging Face](https://huggin
 ---
 
 ## Model Training
+All the files related to model training can be found in the `dpo_training` folder. 
+
 The model training part is a reference implementation of the DPO algorithm for training language models from preference data, as described in the paper [Direct Preference Optimization: Your Language Model is Secretly a Reward Model](https://arxiv.org/abs/2305.18290).
 
 
