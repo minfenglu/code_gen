@@ -159,6 +159,31 @@ def get_hh(split: str, silent: bool = False, cache_dir: str = None) -> Dict[str,
 
     return data
 
+def get_lc(split, silent=False, cache_dir: str = None) -> Dict[str, Dict[str, Union[List[Tuple[int, int]], List[str], str]]]:
+    """Load the LeetCode Preference dataset from Huggingface, and return a dict of prompts and responses.  
+    """
+    print(f'Loading LeetCode Preference dataset ({split} split) from Huggingface...')
+    dataset = datasets.load_dataset('minfeng-ai/leetcode_preference', cache_dir=cache_dir)['train']
+    print('done')
+
+    # shuffle the dataset and select 1% for test
+    dataset = dataset.shuffle(seed=42)
+    dataset = dataset.select(range(int(len(dataset) * 0.01))) if split == 'test' else dataset.select(
+        range(int(len(dataset) * 0.01), len(dataset)))
+    data = defaultdict(dict)
+    for row in tqdm.tqdm(dataset, desc='Processing LC', disable=silent):
+        prompt = row['description']
+        version1, version2 = row['version1'], row['version2']
+        responses = [version1, version2]
+        preference = row['preference']
+        pairs = []
+        pairs.append((version2, version1) if preference else (version1, version2))
+
+        data[prompt]['responses'] = responses
+        data[prompt]['pairs'] = pairs
+        data[prompt]['sft_target'] = preference
+
+    return data
 
 def get_dataset(name: str, split: str, silent: bool = False, cache_dir: str = None):
     """Load the given dataset by name. Supported by default are 'shp', 'hh', and 'se'."""
@@ -168,6 +193,8 @@ def get_dataset(name: str, split: str, silent: bool = False, cache_dir: str = No
         data = get_hh(split, silent=silent, cache_dir=cache_dir)
     elif name == 'se':
         data = get_se(split, silent=silent, cache_dir=cache_dir)
+    elif name == 'lc':
+        data = get_lc(split, silent=silent, cache_dir=cache_dir)
     else:
         raise ValueError(f"Unknown dataset '{name}'")
 
