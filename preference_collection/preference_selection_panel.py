@@ -1,3 +1,4 @@
+import numpy as np
 import streamlit as st
 from constants import (
     VERSIONS,
@@ -32,13 +33,18 @@ def on_submit_code_and_preference():
 # store human preference in the databse
 def on_submit_preference_only():
     id = st.session_state.problems["id"][st.session_state.prompt_index]
+    selection = VERSIONS.index(st.session_state.preference_choice.replace("`", ""))
+    # update local copy 
+    st.session_state.problems.loc[
+        st.session_state.problems["id"] == id, "preference"
+    ] = selection
     (
         st.session_state.submit_status,
         st.session_state.app_status,
     ) = record_preference_only(
         st.session_state.db_con,
         id,
-        VERSIONS.index(st.session_state.preference_choice.replace("`", "")),
+        selection,
     )
 
 
@@ -57,14 +63,21 @@ def on_save_comparison():
 def contains_test():
     id = st.session_state.problems["id"][st.session_state.prompt_index]
     test = st.session_state.tests[st.session_state.tests["id"] == id]
-    return test is not None
+    return not test.empty
+
+
+# fetch human preference if available
+def get_preference():
+    preference = st.session_state.problems["preference"][st.session_state.prompt_index]
+    if np.isnan(preference):
+        return None
+    return preference
 
 
 # run available unit tests
 def on_click_run_unit_tests():
     id = st.session_state.problems["id"][st.session_state.prompt_index]
     test = st.session_state.tests[st.session_state.tests["id"] == id]
-    print(test)
     function_name = test["function_name"].iloc[0]
     inputs = test["inputs"].iloc[0]
     outputs = test["outputs"].iloc[0]
@@ -84,6 +97,7 @@ def on_click_run_unit_tests():
 
     st.session_state.unit_test_results[id] = results
 
+
 # display alert/confirmation for database operation
 def display_operation_status():
     if st.session_state.submit_status:
@@ -93,11 +107,10 @@ def display_operation_status():
         elif st.session_state.submit_status == DBOperationStatus.ERROR:
             st.error(st.session_state.app_status, icon="🚨")
 
+
 # display two versions of python code
 def display_code_pair():
-    st.button(
-        "Save Code Pair", key="save_code_comparison_button", on_click=on_save_comparison
-    )
+    preference = get_preference()
     version1_code_column, version2_code_column = st.columns(2)
     with version1_code_column:
         st.markdown("`version 1`")
@@ -127,17 +140,22 @@ def display_code_pair():
         "Which version is better?",
         [f"`{version}`" for version in VERSIONS],
         key="preference_choice",
+        index=int(preference) if preference else 0
     )
-    code_and_preference_button, preference_only_button = st.columns(2)
+    code_only_button, code_and_preference_button, preference_only_button, _ = st.columns(4)
+    with code_only_button:
+        st.button(
+            f"Update (Code Only)", key="save_code_comparison_button", on_click=on_save_comparison
+        )
     with code_and_preference_button:
         st.button(
-            "Submit (Code + Preference)",
+            f"{'Submit' if not preference else 'Update'} (Code + Preference)",
             key="code_and_preference_confirm_button",
             on_click=on_submit_code_and_preference,
         )
     with preference_only_button:
         st.button(
-            "Submit (Preference Only)",
+            f"{'Submit' if not preference else 'Update'} (Preference Only)",
             key="preference_only_confirm_button",
             on_click=on_submit_preference_only,
         )
