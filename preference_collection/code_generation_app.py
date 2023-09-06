@@ -31,6 +31,16 @@ if "db_con" not in st.session_state:
 # Build App UI
 ############################################
 
+# remove hamburger item
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
 display_sidebar()
 
 st.header("Which version is better?")
