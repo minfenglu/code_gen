@@ -1,12 +1,9 @@
 import math
 import numpy as np
-import streamlit as st
-import re
 import requests
+import streamlit as st
 import time
 from constants import (
-    VERSIONS,
-    DEFAULT_INSTRUCTION,
     OLLAMA_API_ENDPOINT,
 )
 from duckdb_utils import (
@@ -29,6 +26,7 @@ def on_submit_preference_only(version):
     st.session_state.problems.loc[
         st.session_state.problems["id"] == id, "preference"
     ] = version
+    # update database
     (
         st.session_state.submit_status,
         st.session_state.app_status,
@@ -38,6 +36,7 @@ def on_submit_preference_only(version):
         version,
     )
     time.sleep(0.5)
+    # move on to the next question after preference submitssion
     on_change_question(1)
 
 
@@ -53,14 +52,14 @@ def on_save_comparison():
 
 
 # check if unit tests are available for current problem
-def contains_test():
+def _contains_test():
     id = st.session_state.problems["id"][st.session_state.prompt_index]
     test = st.session_state.tests[st.session_state.tests["id"] == id]
     return not test.empty
 
 
 # fetch human preference if available
-def get_preference():
+def _get_preference():
     preference = st.session_state.problems["preference"][st.session_state.prompt_index]
     if np.isnan(preference):
         return None
@@ -69,7 +68,7 @@ def get_preference():
 
 # run available unit tests
 def run_unit_tests_on_update():
-    if contains_test():
+    if _contains_test():
         id = st.session_state.problems["id"][st.session_state.prompt_index]
         test = st.session_state.tests[st.session_state.tests["id"] == id]
         function_name = test["function_name"].iloc[0]
@@ -101,7 +100,9 @@ def display_operation_status():
             st.error(st.session_state.app_status, icon="🚨")
 
 
-def align_code_versions(version1, version2):
+# add extra padding (front-end only)
+# to make sure two code blocks have the same height
+def _align_code_versions(version1, version2):
     n1 = len(version1.split("\n"))
     n2 = len(version2.split("\n"))
     if n1 < n2:
@@ -113,16 +114,16 @@ def align_code_versions(version1, version2):
     return version1, version2
 
 
-def render_test_status(status):
+def _render_test_status(status):
     if status == "F":
-        return "❌"
+        return "❌"  # fail
     elif status == ".":
-        return "✅"
+        return "✅"  # pass
     else:
-        return "❗"
+        return "❗"  # error
 
 
-def render_selection(preference, code_version):
+def _render_selection(preference, code_version):
     if preference == 1.0 * (code_version - 1):
         return "✅"
     return " ```  ```"
@@ -133,27 +134,29 @@ def version_selection_column(code_version, python_code):
     preference = st.session_state.problems["preference"][st.session_state.prompt_index]
 
     st.button(
-        f"``` ``` ```Version {code_version}```{render_selection(preference, code_version)}",
+        f"``` ``` ```Version {code_version}```{_render_selection(preference, code_version)}",
         key=f"version{code_version}_selection_button",
         on_click=on_submit_preference_only,
         args=(code_version,),
     )
 
     st.code(python_code, line_numbers=True)
+
+    # display unit test results if available
     if id in st.session_state.unit_test_results:
         results = st.session_state.unit_test_results[id][code_version - 1]
         text, test0, test1, test2, _ = st.columns([2.5, 1, 1, 1, 5])
         with text:
-            st.text("test cases:")
+            st.text("Tests:")
         if len(results) > 0:
             with test0:
-                st.text(render_test_status(results[0]))
+                st.text(_render_test_status(results[0]))
         if len(results) > 1:
             with test1:
-                st.text(render_test_status(results[1]))
+                st.text(_render_test_status(results[1]))
         if len(results) > 2:
             with test2:
-                st.text(render_test_status(results[2]))
+                st.text(_render_test_status(results[2]))
 
 
 # reset solutions
@@ -162,7 +165,7 @@ def reset_solutions():
     st.session_state.version2 = None
 
 
-# call codellama
+# call codellama to generate code pairs
 def call_codellama():
     reset_solutions()
     data = {
@@ -184,6 +187,7 @@ def call_codellama():
         st.session_state.problems["id"] == id, "version2"
     ] = st.session_state.version2
     new_function_name = extract_function_name(st.session_state.version1)
+    # update unit test funtion_name 
     st.session_state.tests.loc[
         st.session_state.problems["id"] == id, "function_name"
     ] = new_function_name
@@ -199,6 +203,8 @@ def init_app_status():
 
 
 # change the question to display
+# delta = 1 : move to next question
+# delta = -1: move to prev question
 def on_change_question(delta):
     init_app_status()
     st.session_state.prompt_index += delta
@@ -221,9 +227,9 @@ def on_change_question(delta):
 
 # display two versions of python code
 def display_code_pair():
-    preference = get_preference()
+    preference = _get_preference()
     version1_code_column, version2_code_column = st.columns(2)
-    version1, version2 = align_code_versions(
+    version1, version2 = _align_code_versions(
         st.session_state.version1, st.session_state.version2
     )
     with version1_code_column:
@@ -233,7 +239,7 @@ def display_code_pair():
     _, center_regenerate_button, _ = st.columns(3)
     with center_regenerate_button:
         st.button(
-            "Regenerate Code 😔", key="regenerate_code_button", on_click=call_codellama
+            "Generate Again 🤔", key="regenerate_code_button", on_click=call_codellama
         )
     if st.session_state.debug_mode:
         back, forward, _ = st.columns([1, 1, 10])

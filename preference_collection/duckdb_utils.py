@@ -104,14 +104,16 @@ def save_comparison(connection, id, version1, version2):
     except Exception as e:
         return DBOperationStatus.ERROR, e
 
+
+# extract function name from function signature
 def extract_function_name(signature: str) -> str:
-    signature = signature.replace('\n', '')
-    match = re.search(r'def (\w+)\(', signature)
+    signature = signature.replace("\n", "")
+    match = re.search(r"def (\w+)\(", signature)
     if match:
         return match.group(1)
     else:
         return None
-    
+
 
 def update_function_name(connection, id, function_name):
     try:

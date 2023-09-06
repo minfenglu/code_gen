@@ -9,15 +9,15 @@ from duckdb_utils import (
     post_process_response,
 )
 
- 
 
-
+# for debugging only
 def on_toggle_debug_mode():
     st.session_state.debug_mode = st.session_state.debug_mode_toggle
 
 
 def display_sidebar():
     with st.sidebar:
+        # make sidebar header larger
         st.markdown(
             """
         <style>

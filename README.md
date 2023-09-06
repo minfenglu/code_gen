@@ -10,6 +10,7 @@ The standard procedure for the ```RLHF``` framework consists of three primary st
 
 In the paper [Direct Preference Optimization: Your Language Model is Secretly a Reward Model](https://arxiv.org/abs/2305.18290), the authors implement the Bradley and Terry model, a type of preference model, in the loss function. They showcase that there's no need for the second step as language models intrinsically serve as reward models. Remarkably, by eliminating this step, the issue becomes much more straightforward, narrowing down to an optimization task with a cross-entropy goal.
 
+---
 
 ## Project Overview
 This project is an end-to-end ML pipeline that covers data generation, huamn preference collection, and model training. 
@@ -24,15 +25,21 @@ Here is a visual illustration for the data collection, and the difference betwee
 
 ![Project Overview](./images/overview.gif)
 
+---
 
 ## Data Collection 
 
-A screenshot of the manual labeling interface:
-![UI](./images/streamlit.png)
+All relevant files are located in the `preference_collection` folder. 
+
+A screenshot of the preference selection interface if code pair is present:
+![UI with code](./images/streamlit.png)
+
+A screenshot of the code pair generation interface if code pair is not present: 
+![UI without code](./images/streamlit_no_code.png)
 
 The UI interface fetches a list of LeetCode questions (question title, and detailed question description) from database and display one question a time on the sidebar. 
 
-Labelers can click on the Generate button to prompt ```codellama``` to generate two versions of python solutions. The generated codes will be displayed on the main windown. Labelers can go through the solution and select the preference to indicite which code version is better, in terms of correctness, performance and readability. 
+If the code pair is not generated, labelers can click on the Generate button to prompt ```codellama``` to generate two versions of python solutions. The generated codes will be displayed on the main windown. Labelers can go through the solution and select the preference to indicate which code version is better, in terms of correctness, performance and readability. 
 
 Let's further break down the labeling interface into several major building blocks. 
 
@@ -68,6 +75,16 @@ curl -X POST http://localhost:11434/api/generate -d '{
 This project uses ```DuckDB``` as backend for storing and updating leetcode problemns, code pairs and human preferences. 
 
 Why ```DuckDB```? ```DuckDB``` is an easy-to-install and use embedded database with no server configuration needed. It supports the full SQL standard, transactions, secondary indexes, and integrates with data analysis languages like Python and R. DuckDB is free, extensively tested for stability, and offers performance on par with specialized OLAP databases, making it suitable for a range of dataset sizes. (Learn more about [DuckDB](https://duckdb.org/) and [MotherDuck](https://motherduck.com/), which supports local, cloud or hybrid execution.)
+
+Here is the Share URL for read-only access 
+``` 
+'md:_share/dpo/f64c68ea-ca25-425c-9ab0-03fbe00b6234'
+```
+
+Run this snippet to attach database
+```
+ATTACH 'md:_share/dpo/f64c68ea-ca25-425c-9ab0-03fbe00b6234'
+```
 
 ### Streamlit App
 Streamlit was launched to showcase projects via elegant web applications. It provides a streamlined interface for the Python environment, supporting APIs, models, and business strategies with simple coding.
