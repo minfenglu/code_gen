@@ -1,5 +1,10 @@
-# Direct Preference Optimization (DPO)
-An Improved Option Over Reinforcement Learning from Human Feedback (RLHF).
+# [BttrCode.AI](https://minfeng-code-gen.streamlit.app/)
+
+BttrCode.AI offers an comprehensive toolkit that demonstrates the application of Direct Preference Optimization (DPO) to guide AI in aligning with human choices. It prompts codellama to produce two answers to a LeetCode question and features a user interface for human labelers to indicate their preferred solution.
+
+![UI](./images/workflow.gif)
+
+You can interact with the UI [here](https://minfeng-code-gen.streamlit.app/)
 
 ## Background 
 LLMs possess vast knowledge but lack precise control due to their unsupervised training. Current methods to enhance control use human feedback to fine-tune these models, a process known as **reinforcement learning from human feedback** (`RLHF`). 
