@@ -1,6 +1,7 @@
 import duckdb
 import json
 import math
+import re
 import streamlit as st
 
 from constants import (
@@ -47,8 +48,8 @@ def post_process_response(response):
     try:
         return outputs[1], outputs[3]
     except Exception as e:
-        print(output)
-        raise e
+        print(e, output)
+        return None, None
 
 
 # save the code pair and human preference to databse
@@ -70,7 +71,8 @@ def record_code_and_preference(connection, id, version1, version2, preference):
     except Exception as e:
         return DBOperationStatus.ERROR, e
 
-# only save human prefrence to database 
+
+# only save human prefrence to database
 # applicable when lableler needs to update the answer
 def record_preference_only(connection, id, preference):
     try:
@@ -85,7 +87,8 @@ def record_preference_only(connection, id, preference):
     except Exception as e:
         return DBOperationStatus.ERROR, e
 
-# only save code pair to database 
+
+# only save code pair to database
 # applicable when lableler only wants to save generated code
 def save_comparison(connection, id, version1, version2):
     try:
@@ -102,7 +105,31 @@ def save_comparison(connection, id, version1, version2):
         return DBOperationStatus.ERROR, e
 
 
-# fetch data from duckdb and initialize the streamlit app 
+# extract function name from function signature
+def extract_function_name(signature: str) -> str:
+    signature = signature.replace("\n", "")
+    match = re.search(r"def (\w+)\(", signature)
+    if match:
+        return match.group(1)
+    else:
+        return None
+
+# update function name when code is regenerated 
+def update_function_name(connection, id, function_name):
+    try:
+        connection.sql(
+            f"""
+            UPDATE leetcode_tests 
+            SET function_name='{function_name}', 
+            where id={id}
+            """
+        )
+        return DBOperationStatus.SUCCESS, "leetcode test has been updated sucessfully!"
+    except Exception as e:
+        return DBOperationStatus.ERROR, e
+
+
+# fetch data from duckdb and initialize the streamlit app
 # populate app data that comes from database
 def init_database():
     st.session_state.db_con = duckdb.connect("md:dpo")
@@ -117,6 +144,7 @@ def init_database():
     # initialize the first leetcode question to display
     st.session_state.problem_count = len(st.session_state.problems.index)
     st.session_state.initial_index = 0
+    st.session_state.prompt_index = 0
     st.session_state.version1 = st.session_state.problems["version1"][
         st.session_state.initial_index
     ]

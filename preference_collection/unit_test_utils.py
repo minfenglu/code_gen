@@ -2,6 +2,7 @@ import subprocess
 import re
 
 
+# extract function name from the function signature
 def extract_function_name(signature: str) -> str:
     signature = signature.replace("\n", "")
     match = re.search(r"def (\w+)\(", signature)
@@ -11,6 +12,8 @@ def extract_function_name(signature: str) -> str:
         return None
 
 
+# create python script for the provided code snippet
+# create unit test script for the corresponding code
 def generate_solution_file(
     solution_path: str,
     test_path: str,
@@ -19,8 +22,10 @@ def generate_solution_file(
     inputs: str,
     outputs: str,
 ):
+    # save python script to a .py file
     with open(solution_path, "w") as file:
         file.write(script)
+    # generate unit test script
     test_cases_str = ""
     for idx, input_output in enumerate(zip(inputs, outputs)):
         input, output = input_output
@@ -39,6 +44,7 @@ class TestSolution(unittest.TestCase):
 if __name__ == "__main__":
     unittest.main()
     """
+    # save unit test script to .py file
     with open(test_path, "w") as file:
         file.write(test)
 
@@ -61,7 +67,6 @@ def execute_script(script_path):
 def process_unit_tests(script_path):
     stdout, stderr = execute_script(script_path)
     output = stdout.splitlines()[0] if stdout else stderr.splitlines()[0]
-    print("output:", stderr)
     results = []
     for result in output:
         results.append(result)
@@ -78,11 +83,3 @@ def run_unit_tests(solution_path, test_path, function_name, script, inputs, outp
         outputs,
     )
     return process_unit_tests(test_path)
-
-
-def display_test_results(test_results, n, header):
-    res = f"`{header}:`\n"
-    for i in range(min(n, len(test_results))):
-        test_result = test_results[i]
-        res += f"* test{i+1}: {':green[Passed]' if test_result == '.' else (':red[Failed]' if test_result == 'F' else ':red[Error]' ) }\n"
-    return res
