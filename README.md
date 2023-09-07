@@ -1,25 +1,29 @@
 # Direct Preference Optimization (DPO)
 An Improved Option Over Reinforcement Learning from Human Feedback (RLHF).
 
-## Backgroud 
-The standard procedure for the ```RLHF``` framework consists of three primary steps:
+## Background 
+LLMs possess vast knowledge but lack precise control due to their unsupervised training. Current methods to enhance control use human feedback to fine-tune these models, a process known as **reinforcement learning from human feedback** (`RLHF`). 
+
+However, `RLHF` is a complicated and often unstable procedure, first fitting a reward model that reflects the human preferences, and then fine-tuning the large unsupervised LM using reinforcement learning to maximize this estimated reward without deviating significantly from the original model. 
+
+The standard procedure for the `RLHF` framework consists of three primary steps:
 
 * Develop a supervised fine-tuning model (SFT model) from human-curated, high-quality datasets.
 * Create a reward model based on comparison/preference data derived from human evaluations.
 * Refine the policy using an RL method like proximal policy optimization (PPO).
 
-In the paper [Direct Preference Optimization: Your Language Model is Secretly a Reward Model](https://arxiv.org/abs/2305.18290), the authors implement the Bradley and Terry model, a type of preference model, in the loss function. They showcase that there's no need for the second step as language models intrinsically serve as reward models. Remarkably, by eliminating this step, the issue becomes much more straightforward, narrowing down to an optimization task with a cross-entropy goal.
+In the paper [Direct Preference Optimization: Your Language Model is Secretly a Reward Model](https://arxiv.org/abs/2305.18290), the authors implement the Bradley and Terry model, a type of preference model, in the loss function. They demonstrate that there's no need for the second step as language models intrinsically serve as reward models. Remarkably, by eliminating this step, the issue becomes much more straightforward, narrowing down to an optimization task with a cross-entropy goal.
 
 ---
 
 ## Project Overview
-This project is an end-to-end ML pipeline that covers data generation, huamn preference collection, and model training. 
+Is it possible to utilize `DPO` to steer the LLMs in a way that matches human expectations/preferences? In this project, I used `DPO` to train codellama-7b to produce code meeting specific standards. Humans were tasked with assessing two code solutions for the same LeetCode prompt. For each LeetCode question, a preference was recorded based on which solution excelled in certain coding standards: accuracy, runtime/space complexity, and clarity. The collected preference data is later used in the `DPO` training.
 
-It contains two major compoenents: a Streamlit app for huamn preference data collecction and a model training framework to train models with DPO.  
+This project is an end-to-end ML pipeline that covers data generation, human preference collection, and model training. 
 
+It contains two major components: a Streamlit app for human preference data collection and a training framework to train models with `DPO`.  
 
-
-It uses codellama-7b as a base model and we want to train a model that can solve LeetCode questions in python. 
+The foundation model is codellama-7b, and the objective is to train a model proficient in solving LeetCode questions using Python with the best style! 
 
 Here is a visual illustration for the data collection, and the difference between RLHF & DPO. 
 
@@ -31,20 +35,22 @@ Here is a visual illustration for the data collection, and the difference betwee
 
 All relevant files are located in the `preference_collection` folder. The app entry point is located in `code_generation_app.py`
 
-A screenshot of the preference selection interface if code pair is present:
+You can interact with the [Streamlit App here](https://minfeng-code-gen.streamlit.app/). (Note: for code generation to work, you need to have Ollama set up)
+
+A screenshot of the preference selection interface if a code pair is present:
 ![UI with code](./images/streamlit.png)
 
-A screenshot of the code pair generation interface if code pair is not present: 
+A screenshot of the code pair generation interface if a code pair is not present: 
 ![UI without code](./images/streamlit_no_code.png)
 
-The UI interface fetches a list of LeetCode questions (question title, and detailed question description) from database and display one question a time on the sidebar. 
+The UI presents a series of LeetCode questions (including the title and detailed description) from the database, showcasing one question at a time in the sidebar.
 
-If the code pair is not generated, labelers can click on the Generate button to prompt ```codellama``` to generate two versions of python solutions. The generated codes will be displayed on the main windown. Labelers can go through the solution and select the preference to indicate which code version is better, in terms of correctness, performance and readability. 
+If a code pair hasn't been produced, labelers have the option to click the 'Generate Code' button, prompting ```codellama``` to create two Python solution variants. These generated solutions will appear in the main window. Labelers can then review the solutions and select their preference, determining which version excels in correctness, performance, and readability.
 
-Let's further break down the labeling interface into several major building blocks. 
+Now, let's delve deeper into the various primary components of the labeling interface.
 
 ### Ollama
-```Ollama``` allows you to run LLMs locally. (check out the [website](https://ollama.ai/) and [github](https://github.com/jmorganca/ollama) to learn more). It currently supports Llama 2, Code Llama and many other models. 
+`Ollama` allows you to run LLMs locally. (check out the [website](https://ollama.ai/) and [github](https://github.com/jmorganca/ollama) to learn more). It currently supports Llama 2, Code Llama and many other models. 
 
 After downloading Ollama, you can run the LLMs locally on your personal laptop. 
 
@@ -89,15 +95,15 @@ ATTACH 'md:_share/dpo/f64c68ea-ca25-425c-9ab0-03fbe00b6234'
 ### Streamlit App
 Streamlit was launched to showcase projects via elegant web applications. It provides a streamlined interface for the Python environment, supporting APIs, models, and business strategies with simple coding.
 
-This project uses Streamlit to build UI for interactively generating code pairs and collecting human preference. To start the streamlit app, run 
+This project uses Streamlit to build UI for interactively generating code pairs and collecting human preference. To start the streamlit app, go to the `preference_collection` folder and run 
 ```
 streamlit run code_generation_app.py
 ```
 
-Note: in order for the code generation functionality to be working, Ollama shoud be up and running. 
+Note: in order for the code generation functionality to be working, Ollama should be up and running. 
 
-### Hugging Face 
-The collected human preference data is uploaded to [Hugging Face](https://huggingface.co/datasets/minfeng-ai/leetcode_preference). The dataset will be later used in the model training.  
+### HuggingFace 
+The collected human preference data is uploaded to [HuggingFace](https://huggingface.co/datasets/minfeng-ai/leetcode_preference). The dataset will be later used in the model training.  
 
 ---
 

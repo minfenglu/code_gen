@@ -19,7 +19,7 @@ from unit_test_utils import (
 
 
 # store human preference in the databse
-def on_submit_preference_only(version):
+def on_submit_preference_only(version: int):
     version -= 1
     id = st.session_state.problems["id"][st.session_state.prompt_index]
     # update local copy
@@ -58,14 +58,6 @@ def _contains_test():
     return not test.empty
 
 
-# fetch human preference if available
-def _get_preference():
-    preference = st.session_state.problems["preference"][st.session_state.prompt_index]
-    if np.isnan(preference):
-        return None
-    return preference
-
-
 # run available unit tests
 def run_unit_tests_on_update():
     if _contains_test():
@@ -102,7 +94,7 @@ def display_operation_status():
 
 # add extra padding (front-end only)
 # to make sure two code blocks have the same height
-def _align_code_versions(version1, version2):
+def _align_code_versions(version1: str, version2: str):
     n1 = len(version1.split("\n"))
     n2 = len(version2.split("\n"))
     if n1 < n2:
@@ -187,7 +179,7 @@ def version_selection_column(code_version, python_code):
     with slection_button:
         st.button(
             f"This One",
-            key=f"version{code_version}_selection_button",
+            key=f"version{code_version}_{id}_selection_button",
             on_click=on_submit_preference_only,
             args=(code_version,),
         )
@@ -294,6 +286,10 @@ def display_code_pair():
                     filter: brightness(200%) saturate(100%) hue-rotate(20deg);
                   
                 }
+                div[data-testid="column"].css-keje6w.e1f1d6gn1:hover .code-header #check-img{
+                    filter: brightness(50%);
+                }
+                 
                 }
             </style>
         """,
@@ -310,13 +306,12 @@ def display_code_pair():
                 }
                 button[kind="primary"].css-nbt3vv.ef3psqc12 {
                     margin-top: 12px;
-                    margin-right: -24px;
+                    margin-left: 45px;
                 }
             </style>
         """,
         unsafe_allow_html=True,
     )
-    preference = _get_preference()
     version1_code_column, version2_code_column = st.columns(2)
     version1, version2 = _align_code_versions(
         st.session_state.version1, st.session_state.version2
@@ -325,10 +320,3 @@ def display_code_pair():
         version_selection_column(1, version1)
     with version2_code_column:
         version_selection_column(2, version2)
-
-    if st.session_state.debug_mode:
-        back, forward, _ = st.columns([1, 1, 10])
-        with back:
-            st.button("Prev", on_click=on_change_question, args=(-1,))
-        with forward:
-            st.button("Next", on_click=on_change_question, args=(1,))
