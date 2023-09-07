@@ -25,7 +25,7 @@ DEFAULT_INSTRUCTION = (
 )
 
 # ollama api endpoint for running codellama
-OLLAMA_API_ENDPOINT = "http://localhost:11434/api/generate"
+OLLAMA_API_ENDPOINT = "http://146.235.195.194:11434/api/generate"
 
 # code versions
 VERSIONS = ["version1", "version2"]
