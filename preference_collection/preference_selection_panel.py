@@ -19,7 +19,7 @@ from unit_test_utils import (
 
 
 # store human preference in the databse
-def on_submit_preference_only(version):
+def on_submit_preference_only(version: int):
     version -= 1
     id = st.session_state.problems["id"][st.session_state.prompt_index]
     # update local copy
@@ -58,14 +58,6 @@ def _contains_test():
     return not test.empty
 
 
-# fetch human preference if available
-def _get_preference():
-    preference = st.session_state.problems["preference"][st.session_state.prompt_index]
-    if np.isnan(preference):
-        return None
-    return preference
-
-
 # run available unit tests
 def run_unit_tests_on_update():
     if _contains_test():
@@ -102,7 +94,7 @@ def display_operation_status():
 
 # add extra padding (front-end only)
 # to make sure two code blocks have the same height
-def _align_code_versions(version1, version2):
+def _align_code_versions(version1: str, version2: str):
     n1 = len(version1.split("\n"))
     n2 = len(version2.split("\n"))
     if n1 < n2:
@@ -182,8 +174,7 @@ def version_selection_column(code_version, python_code):
     # (version name, whether selected as preferred, selection button)
     with header:
         _render_code_header(
-            f"Version {code_version}", _render_selection(
-                preference, code_version)
+            f"Version {code_version}", _render_selection(preference, code_version)
         )
     with slection_button:
         st.button(
@@ -204,16 +195,13 @@ def version_selection_column(code_version, python_code):
                 _render_test_header("Tests:", "test-header", -20)
             if len(results) > 0:
                 with test0:
-                    _render_test_header(_render_test_status(
-                        results[0]), "test-result")
+                    _render_test_header(_render_test_status(results[0]), "test-result")
             if len(results) > 1:
                 with test1:
-                    _render_test_header(_render_test_status(
-                        results[1]), "test-result")
+                    _render_test_header(_render_test_status(results[1]), "test-result")
             if len(results) > 2:
                 with test2:
-                    _render_test_header(_render_test_status(
-                        results[2]), "test-result")
+                    _render_test_header(_render_test_status(results[2]), "test-result")
 
 
 # reset solutions
@@ -324,7 +312,6 @@ def display_code_pair():
         """,
         unsafe_allow_html=True,
     )
-    preference = _get_preference()
     version1_code_column, version2_code_column = st.columns(2)
     version1, version2 = _align_code_versions(
         st.session_state.version1, st.session_state.version2

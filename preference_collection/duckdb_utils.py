@@ -1,3 +1,31 @@
+"""
+This module provides utilities for handling and processing data related to LeetCode problems and their solutions. 
+It includes functions for parsing Python code from API outputs, saving code pairs and human preferences to a database, 
+and initializing the Streamlit app with data fetched from the database.
+
+Functions:
+    - fix_quote(line: str) -> str: Handles edge cases in quotes.
+    - post_process_response(response: str) -> Tuple[str, str]: Parses Python code from API output.
+    - record_code_and_preference(connection, id: int, version1: str, version2: str, preference: int) -> Tuple[DBOperationStatus, str]: Saves code pair and human preference to the database.
+    - record_preference_only(connection, id: int, preference: int) -> Tuple[DBOperationStatus, str]: Saves only the human preference to the database.
+    - save_comparison(connection, id: int, version1: str, version2: str) -> Tuple[DBOperationStatus, str]: Saves only the code pair to the database.
+    - extract_function_name(signature: str) -> str: Extracts the function name from a function signature.
+    - update_function_name(connection, id: int, function_name: str) -> Tuple[DBOperationStatus, str]: Updates the function name in the database.
+    - init_database() -> None: Initializes the Streamlit app with data from the database.
+
+Dependencies:
+    - duckdb: For database operations.
+    - json: For JSON data parsing.
+    - math: For mathematical operations.
+    - re: For regular expression operations.
+    - streamlit as st: For web application framework.
+    - constants: For predefined constants.
+    - enum: For creating enumerations.
+
+Classes:
+    - DBOperationStatus(Enum): Represents the status of database operations.
+"""
+
 import duckdb
 import json
 import math
@@ -9,6 +37,7 @@ from constants import (
     TEST_COLUMNS,
 )
 from enum import Enum
+from typing import List, Tuple
 
 
 # enum to represent databse operation status
@@ -18,13 +47,31 @@ class DBOperationStatus(Enum):
 
 
 # edge case handling
-def fix_quote(line):
+def fix_quote(line: str) -> str:
+    """
+    Handles edge cases in quotes within a given line.
+
+    Parameters:
+        line (str): The input line containing quotes.
+
+    Returns:
+        str: The modified line with corrected quotes.
+    """
     line = line.replace('"(""', '"("').replace('"")"', '")"')
     return line
 
 
 # parse the python code from API output
-def post_process_response(response):
+def post_process_response(response: str) -> Tuple[str, str]:
+    """
+    Parses Python code from the given API output.
+
+    Parameters:
+        response (str): The API output containing code information.
+
+    Returns:
+        Tuple[str, str]: The parsed Python code and its associated output.
+    """
     lines = [obj for obj in response.splitlines()]
     res = []
     prev_line = None
@@ -52,8 +99,22 @@ def post_process_response(response):
         return None, None
 
 
-# save the code pair and human preference to databse
-def record_code_and_preference(connection, id, version1, version2, preference):
+def record_code_and_preference(
+    connection, id: str, version1: str, version2: str, preference: int
+) -> Tuple[DBOperationStatus, str]:
+    """
+    Saves a code pair and human preference to the database.
+
+    Parameters:
+        connection: The database connection.
+        id (int): The ID of the LeetCode problem.
+        version1 (str): The first version of the code.
+        version2 (str): The second version of the code.
+        preference (int): The human preference between the two code versions.
+
+    Returns:
+        Tuple[DBOperationStatus, str]: The status of the database operation and a message.
+    """
     try:
         connection.sql(
             f"""
@@ -72,9 +133,18 @@ def record_code_and_preference(connection, id, version1, version2, preference):
         return DBOperationStatus.ERROR, e
 
 
-# only save human prefrence to database
-# applicable when lableler needs to update the answer
-def record_preference_only(connection, id, preference):
+def record_preference_only(connection, id: int, preference: int):
+    """
+    Saves only the human preference to the database.
+
+    Parameters:
+        connection: The database connection.
+        id (int): The ID of the LeetCode problem.
+        preference (int): The human preference between the two code versions.
+
+    Returns:
+        Tuple[DBOperationStatus, str]: The status of the database operation and a message.
+    """
     try:
         connection.sql(
             f"""
@@ -88,9 +158,21 @@ def record_preference_only(connection, id, preference):
         return DBOperationStatus.ERROR, e
 
 
-# only save code pair to database
-# applicable when lableler only wants to save generated code
-def save_comparison(connection, id, version1, version2):
+def save_comparison(
+    connection, id: int, version1: str, version2: str
+) -> Tuple[DBOperationStatus, str]:
+    """
+    Saves only the code pair to the database.
+
+    Parameters:
+        connection: The database connection.
+        id (int): The ID of the LeetCode problem.
+        version1 (str): The first version of the code.
+        version2 (str): The second version of the code.
+
+    Returns:
+        Tuple[DBOperationStatus, str]: The status of the database operation and a message.
+    """
     try:
         connection.sql(
             f"""
@@ -107,6 +189,15 @@ def save_comparison(connection, id, version1, version2):
 
 # extract function name from function signature
 def extract_function_name(signature: str) -> str:
+    """
+    Extracts the function name from a given function signature.
+
+    Parameters:
+        signature (str): The function signature.
+
+    Returns:
+        str: The extracted function name or None if not found.
+    """
     signature = signature.replace("\n", "")
     match = re.search(r"def (\w+)\(", signature)
     if match:
@@ -114,10 +205,20 @@ def extract_function_name(signature: str) -> str:
     else:
         return None
 
+
 # update function name when code is regenerated
-
-
 def update_function_name(connection, id, function_name):
+    """
+    Updates the function name in the database when the code is regenerated.
+
+    Parameters:
+        connection: The database connection.
+        id (int): The ID of the LeetCode problem.
+        function_name (str): The new function name.
+
+    Returns:
+        Tuple[DBOperationStatus, str]: The status of the database operation and a message.
+    """
     try:
         connection.sql(
             f"""
@@ -131,9 +232,16 @@ def update_function_name(connection, id, function_name):
         return DBOperationStatus.ERROR, e
 
 
-# fetch data from duckdb and initialize the streamlit app
-# populate app data that comes from database
 def init_database():
+    """
+    Initializes the Streamlit app with data fetched from the database.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    """
     st.session_state.db_con = duckdb.connect("md:dpo")
     # construct leetcode problems
     st.session_state.problems = st.session_state.db_con.sql(

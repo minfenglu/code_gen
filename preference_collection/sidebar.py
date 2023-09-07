@@ -2,9 +2,6 @@ import streamlit as st
 from constants import (
     DEFAULT_INSTRUCTION,
 )
-from duckdb_utils import (
-    post_process_response,
-)
 from preference_selection_panel import on_change_question
 
 
