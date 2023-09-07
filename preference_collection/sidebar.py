@@ -15,17 +15,26 @@ def on_toggle_debug_mode():
 def display_sidebar():
     with st.sidebar:
         # make sidebar header larger
-        st.markdown(
+        _ = st.markdown(
             """
-        <style>
-        .big-font {
-            font-size:32px !important;
-        }
-        </style>
-        """,
+            <style>
+                .big-font {
+                    font-size:32px !important;
+                }
+            </style>
+            """,
             unsafe_allow_html=True,
         )
-
+        _ = st.markdown(
+            """
+            <style>
+                .block-container.css-ysnqb2.ea3mdgi4 {
+                margin-top: -132px;
+                }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
         st.markdown('<b class="big-font">BttrCode.AI</b>', unsafe_allow_html=True)
 
         problem_index = (

@@ -130,27 +130,34 @@ def _render_selection(preference, code_version):
 
 
 def _render_code_header(version, icon=""):
-    st.markdown(
+    _ = st.markdown(
         """
         <style>
         .code-header {
             font-size:20px;
             padding: 0px 0px 0px 12px ;
-            margin-top: -12px
+            margin-top: -10px
+        }
+        #check-img {
+            margin-top: -6px
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
-    icon_image = '<img src="img/check.png" alt="✅"/>' if icon else ""
+    icon_image = (
+        ' <img id="check-img" src="https://raw.githubusercontent.com/minfenglu/code_gen/mlu/code-refactor/preference_collection/img/check.png" width=24 alt="✅" />'
+        if icon
+        else ""
+    )
     return st.markdown(
-        f'<b class="code-header">{version} <image src="img/check.png" /></b>',
+        f'<b class="code-header">{version} {icon_image}</b>',
         unsafe_allow_html=True,
     )
 
 
 def _render_test_header(text, class_name, margin_top=-18):
-    st.markdown(
+    _ = st.markdown(
         f"""
         <style>
         .{class_name} {{
@@ -170,7 +177,7 @@ def _render_test_header(text, class_name, margin_top=-18):
 def version_selection_column(code_version, python_code):
     id = st.session_state.problems["id"][st.session_state.prompt_index]
     preference = st.session_state.problems["preference"][st.session_state.prompt_index]
-    header, _, slection_button = st.columns([2, 4, 1.15])
+    header, _, slection_button = st.columns([5, 6, 4])
     # display header
     # (version name, whether selected as preferred, selection button)
     with header:
@@ -273,14 +280,19 @@ def on_change_question(delta):
 
 # display two versions of python code
 def display_code_pair():
-    # custom component styling
-    st.markdown(
+    # highlight the code versoin when hover
+    _ = st.markdown(
         """
             <style>
                 div[data-testid="column"].css-keje6w.e1f1d6gn1 {
                     background-color: #343440;
                     border-radius: 12px; 
                     padding: 8px 0px 16px 0px;
+                    transition: filter 0.3s;
+                }
+                div[data-testid="column"].css-keje6w.e1f1d6gn1:hover {
+                    filter: brightness(200%) saturate(100%) hue-rotate(20deg);
+                  
                 }
                 }
             </style>
@@ -288,7 +300,7 @@ def display_code_pair():
         unsafe_allow_html=True,
     )
     # custom style for This One button
-    st.markdown(
+    _ = st.markdown(
         """
             <style>
                 .stButton {
@@ -309,12 +321,7 @@ def display_code_pair():
         version_selection_column(1, version1)
     with version2_code_column:
         version_selection_column(2, version2)
-    _, center_regenerate_button, _ = st.columns([2, 1, 2])
 
-    with center_regenerate_button:
-        st.button(
-            "Generate Again 🫤", key="regenerate_code_button", on_click=call_codellama
-        )
     if st.session_state.debug_mode:
         back, forward, _ = st.columns([1, 1, 10])
         with back:

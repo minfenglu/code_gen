@@ -29,7 +29,8 @@ if "db_con" not in st.session_state:
 # remove hamburger item
 hide_st_style = """
             <style>
-            #MainMenu {visibility: hidden;}
+            #header {visibility: hidden;}
+            MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             </style>
             """
@@ -56,14 +57,26 @@ def main():
     # main panel for preference selection
     if st.session_state.version1 and st.session_state.version2:
         # display preference selection
-        st.header("Which version is better?")
+        header, button = st.columns([4,1])
+        with header:
+            st.header("Which version is better?")
+        with button:
+            st.button(
+                "Generate Again ↻",
+                key="regenerate_code_button",
+                on_click=call_codellama,
+                type="primary",
+            )
         display_code_pair()
     else:
         # display code pair generation
         st.header("Hey Labeler!")
         st.write('Let\'s play "Which version is better?"')
         st.button(
-            "Generate Code 😊", key="regenerate_code_button", on_click=call_codellama
+            "Oh yeah! Let's play!",
+            key="generate_code_button",
+            type="primary",
+            on_click=call_codellama,
         )
 
     display_operation_status()
