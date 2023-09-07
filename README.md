@@ -110,7 +110,7 @@ The collected human preference data is uploaded to [HuggingFace](https://hugging
 ## Model Training
 All the files related to model training can be found in the `dpo_training` folder. 
 
-The model training part is a reference implementation of the DPO algorithm for training language models from preference data, as described in the paper [Direct Preference Optimization: Your Language Model is Secretly a Reward Model](https://arxiv.org/abs/2305.18290).
+The model training part is a [reference implementation](https://github.com/eric-mitchell/direct-preference-optimization) of the DPO algorithm for training language models from preference data, as described in the paper [Direct Preference Optimization: Your Language Model is Secretly a Reward Model](https://arxiv.org/abs/2305.18290).
 
 
 The training related files are: 
