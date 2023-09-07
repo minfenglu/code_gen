@@ -182,12 +182,13 @@ def version_selection_column(code_version, python_code):
     # (version name, whether selected as preferred, selection button)
     with header:
         _render_code_header(
-            f"Version {code_version}", _render_selection(preference, code_version)
+            f"Version {code_version}", _render_selection(
+                preference, code_version)
         )
     with slection_button:
         st.button(
             f"This One",
-            key=f"version{code_version}_selection_button",
+            key=f"version{code_version}_{id}_selection_button",
             on_click=on_submit_preference_only,
             args=(code_version,),
         )
@@ -203,13 +204,16 @@ def version_selection_column(code_version, python_code):
                 _render_test_header("Tests:", "test-header", -20)
             if len(results) > 0:
                 with test0:
-                    _render_test_header(_render_test_status(results[0]), "test-result")
+                    _render_test_header(_render_test_status(
+                        results[0]), "test-result")
             if len(results) > 1:
                 with test1:
-                    _render_test_header(_render_test_status(results[1]), "test-result")
+                    _render_test_header(_render_test_status(
+                        results[1]), "test-result")
             if len(results) > 2:
                 with test2:
-                    _render_test_header(_render_test_status(results[2]), "test-result")
+                    _render_test_header(_render_test_status(
+                        results[2]), "test-result")
 
 
 # reset solutions
@@ -294,6 +298,10 @@ def display_code_pair():
                     filter: brightness(200%) saturate(100%) hue-rotate(20deg);
                   
                 }
+                div[data-testid="column"].css-keje6w.e1f1d6gn1:hover .code-header #check-img{
+                    filter: brightness(50%);
+                }
+                 
                 }
             </style>
         """,
@@ -310,7 +318,7 @@ def display_code_pair():
                 }
                 button[kind="primary"].css-nbt3vv.ef3psqc12 {
                     margin-top: 12px;
-                    margin-right: -24px;
+                    margin-left: 45px;
                 }
             </style>
         """,
@@ -325,10 +333,3 @@ def display_code_pair():
         version_selection_column(1, version1)
     with version2_code_column:
         version_selection_column(2, version2)
-
-    if st.session_state.debug_mode:
-        back, forward, _ = st.columns([1, 1, 10])
-        with back:
-            st.button("Prev", on_click=on_change_question, args=(-1,))
-        with forward:
-            st.button("Next", on_click=on_change_question, args=(1,))

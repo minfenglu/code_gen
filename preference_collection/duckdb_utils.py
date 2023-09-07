@@ -114,7 +114,9 @@ def extract_function_name(signature: str) -> str:
     else:
         return None
 
-# update function name when code is regenerated 
+# update function name when code is regenerated
+
+
 def update_function_name(connection, id, function_name):
     try:
         connection.sql(

@@ -57,12 +57,12 @@ def main():
     # main panel for preference selection
     if st.session_state.version1 and st.session_state.version2:
         # display preference selection
-        header, button = st.columns([4,1])
+        header, button = st.columns([4, 1])
         with header:
             st.header("Which version is better?")
         with button:
             st.button(
-                "Generate Again ↻",
+                "Generate Again",
                 key="regenerate_code_button",
                 on_click=call_codellama,
                 type="primary",
