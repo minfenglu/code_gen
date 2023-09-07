@@ -146,7 +146,7 @@ def _render_code_header(version, icon=""):
         unsafe_allow_html=True,
     )
     icon_image = (
-        ' <img id="check-img" src="https://raw.githubusercontent.com/minfenglu/code_gen/mlu/code-refactor/preference_collection/img/check.png" width=24 alt="✅" />'
+        ' <img id="check-img" src="https://raw.githubusercontent.com/minfenglu/code_gen/master/preference_collection/img/check.png" width=24 alt="✅" />'
         if icon
         else ""
     )
@@ -307,6 +307,10 @@ def display_code_pair():
                     margin-top: 8px;
                     margin-left: 8px;
                     padding: 0px;
+                }
+                button[kind="primary"].css-nbt3vv.ef3psqc12 {
+                    margin-top: 12px;
+                    margin-right: -24px;
                 }
             </style>
         """,
