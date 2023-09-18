@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codellama-7b
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: codellama-7b-layer
+  template:
+    metadata:
+      labels:
+        component: codellama-7b-layer
+    spec:
+      containers:
+      - name: codellama-7b-container
+        image: minfenglu/llama2-7b:latest
+        volumeMounts:
+        - mountPath: /root/.cache/huggingface/hub
+          name: my-volume
+        ports:
+          - containerPort: 8080
+        env:
+          - name: TRUSS_SECRET_huggingface_api_token
+            value: "TOKEN"
+        resources:
+          limits:
+            nvidia.com/gpu: 1  # Requesting 1 GPU
+            ephemeral-storage: "10Gi"
+            memory: "40Gi"   
+          requests:
+            ephemeral-storage: "10Gi"
+            memory: "40Gi"   
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-tesla-t4
+      imagePullSecrets:
+        - name: my-pull-secret
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: my-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: codellama-7b-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    component: codellama-7b-layer
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
